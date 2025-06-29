@@ -40,3 +40,10 @@
 .read-the-docs {
   color: #888;
 }
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6, .retone-header {
+  font-family: 'Poppins', sans-serif;
+}

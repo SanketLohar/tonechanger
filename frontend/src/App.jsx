@@ -1,11 +1,10 @@
-// src/App.jsx
-import React from "react";
-import RewriterForm from "./components/RewriterForm";
-import "bootstrap/dist/css/bootstrap.min.css"; // ✅ Make sure Bootstrap is loaded
+import React from 'react';
+import RewriterForm from './components/RewriterForm';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
   return (
-    <div className="min-vh-100 d-flex justify-content-center align-items-center bg-light">
+    <div className="App">
       <RewriterForm />
     </div>
   );

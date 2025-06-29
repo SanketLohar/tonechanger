@@ -6,30 +6,30 @@ export default function RewriterForm() {
   const [tone, setTone] = useState("Polite");
   const [messages, setMessages] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [isTyping, setIsTyping] = useState(false);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setSelectedFile(file);
-      console.log("Selected file:", file);
+      e.target.value = null; // allow re-select
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-   if (!text.trim() && !selectedFile) return;
+    if (!text.trim() && !selectedFile) return;
 
-
-    // Add user's message to chat
-   const newUserMessage = {
-  type: "user",
-  content:
-    (text ? text : "") +
-    (selectedFile ? ` (attached: ${selectedFile.name})` : ""),
-};
+    const newUserMessage = {
+      type: "user",
+      content:
+        (text ? text : "") +
+        (selectedFile ? ` (attached: ${selectedFile.name})` : ""),
+    };
 
     setMessages((prev) => [...prev, newUserMessage]);
     setText("");
+    setIsTyping(true); // Start typing animation
 
     try {
       const res = await axios.post("http://localhost:8080/api/rewrite", {
@@ -43,7 +43,27 @@ export default function RewriterForm() {
       const fallbackMsg = { type: "ai", content: "⚠️ Failed to get response." };
       setMessages((prev) => [...prev, fallbackMsg]);
     } finally {
-      setSelectedFile(null); // Clear file after send
+      setSelectedFile(null);
+      setIsTyping(false); // Stop typing animation
+    }
+  };
+
+  const renderFilePreview = () => {
+    if (!selectedFile) return null;
+
+    const fileType = selectedFile.type;
+
+    if (fileType.startsWith("text/") || fileType === "application/json") {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const textPreview = reader.result.slice(0, 200); // Limit preview size
+        alert("📄 File Preview:\n\n" + textPreview);
+      };
+      reader.readAsText(selectedFile);
+    } else if (fileType === "application/pdf") {
+      alert("📎 PDF File Selected: " + selectedFile.name);
+    } else {
+      alert("📁 File Selected: " + selectedFile.name);
     }
   };
 
@@ -58,16 +78,46 @@ export default function RewriterForm() {
         flexDirection: "column",
       }}
     >
-      {/* Header */}
-      <div className="d-flex justify-content-between align-items-center px-3 py-2 bg-success text-white rounded-top">
-        <h5 className="m-0">✍️ Email Tone Rewriter</h5>
+      {/* 🔰 Modern Header */}
+      <div
+        className="text-center py-4 bg-success text-white rounded-top d-flex flex-column align-items-center"
+        style={{ borderTopLeftRadius: "15px", borderTopRightRadius: "15px" }}
+      >
+        <div style={{ fontSize: "2.2rem" }}>💡</div>
+        <h1
+          className="fw-bold"
+          style={{
+            fontFamily: "'Montserrat', sans-serif",
+            fontSize: "2rem",
+            marginBottom: "0.3rem",
+          }}
+        >
+          ReTone
+        </h1>
+        <div
+          style={{
+            fontFamily: "'Roboto', sans-serif",
+            fontSize: "1.05rem",
+            letterSpacing: "0.5px",
+            marginBottom: "0.2rem",
+          }}
+        >
+          — Email Tone Rewriter —
+        </div>
+        <div
+          className="fst-italic"
+          style={{
+            fontFamily: "'Roboto', sans-serif",
+            fontSize: "0.85rem",
+            opacity: 0.9,
+          }}
+        >
+          “Shift the tone, not the message.”
+        </div>
       </div>
 
-      {/* Chat Area */}
-      <div
-        className="p-3 overflow-auto flex-grow-1"
-        style={{ height: "70vh" }}
-      >
+      {/* 💬 Chat Area */}
+      <div className="p-3 overflow-auto flex-grow-1" style={{ height: "70vh" }}>
         <div className="d-flex flex-column gap-3">
           {messages.map((msg, i) => (
             <div
@@ -77,14 +127,24 @@ export default function RewriterForm() {
                   ? "align-self-end bg-success text-white"
                   : "align-self-start bg-light text-dark"
               } px-3 py-2 rounded-pill`}
+              style={{ maxWidth: "75%" }}
             >
               {msg.content}
             </div>
           ))}
+
+          {isTyping && (
+            <div
+              className="align-self-start bg-light text-dark px-3 py-2 rounded-pill"
+              style={{ fontStyle: "italic", opacity: 0.8 }}
+            >
+              ✍️ Typing...
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Input Bar */}
+      {/* ⌨️ Input Bar */}
       <form
         onSubmit={handleSubmit}
         className="d-flex align-items-center gap-2 px-3 py-2 border-top"
@@ -105,12 +165,12 @@ export default function RewriterForm() {
           type="file"
           id="fileUpload"
           hidden
-          onChange={handleFileChange}
+          onChange={(e) => {
+            handleFileChange(e);
+            renderFilePreview();
+          }}
         />
-        <label
-          htmlFor="fileUpload"
-          className="btn btn-outline-secondary btn-sm"
-        >
+        <label htmlFor="fileUpload" className="btn btn-outline-secondary btn-sm">
           📎
         </label>
 
