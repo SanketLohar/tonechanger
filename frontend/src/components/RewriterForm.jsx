@@ -12,7 +12,7 @@ export default function RewriterForm() {
     const file = e.target.files[0];
     if (file) {
       setSelectedFile(file);
-      e.target.value = null; // allow re-select
+      e.target.value = null; // Allow same file reselect
     }
   };
 
@@ -29,7 +29,7 @@ export default function RewriterForm() {
 
     setMessages((prev) => [...prev, newUserMessage]);
     setText("");
-    setIsTyping(true); // Start typing animation
+    setIsTyping(true);
 
     try {
       const res = await axios.post("http://localhost:8080/api/rewrite", {
@@ -43,81 +43,74 @@ export default function RewriterForm() {
       const fallbackMsg = { type: "ai", content: "⚠️ Failed to get response." };
       setMessages((prev) => [...prev, fallbackMsg]);
     } finally {
+      setIsTyping(false);
       setSelectedFile(null);
-      setIsTyping(false); // Stop typing animation
-    }
-  };
-
-  const renderFilePreview = () => {
-    if (!selectedFile) return null;
-
-    const fileType = selectedFile.type;
-
-    if (fileType.startsWith("text/") || fileType === "application/json") {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const textPreview = reader.result.slice(0, 200); // Limit preview size
-        alert("📄 File Preview:\n\n" + textPreview);
-      };
-      reader.readAsText(selectedFile);
-    } else if (fileType === "application/pdf") {
-      alert("📎 PDF File Selected: " + selectedFile.name);
-    } else {
-      alert("📁 File Selected: " + selectedFile.name);
     }
   };
 
   return (
     <div
-      className="container py-4"
+      className="container py-4 position-relative"
       style={{
         background: "#fefdf6",
         height: "90vh",
         borderRadius: "15px",
         display: "flex",
         flexDirection: "column",
+        fontFamily: "'Roboto', sans-serif",
+        overflow: "hidden", // important
       }}
     >
-      {/* 🔰 Modern Header */}
+      {/* ✅ Fixed Watermark (doesn't scroll) */}
       <div
-        className="text-center py-4 bg-success text-white rounded-top d-flex flex-column align-items-center"
-        style={{ borderTopLeftRadius: "15px", borderTopRightRadius: "15px" }}
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          fontSize: "6rem",
+          fontWeight: 900,
+          fontFamily: "'Montserrat', sans-serif",
+          color: "rgba(0,0,0,0.05)",
+          textTransform: "uppercase",
+          pointerEvents: "none",
+          userSelect: "none",
+          zIndex: 0,
+        }}
       >
-        <div style={{ fontSize: "2.2rem" }}>💡</div>
-        <h1
-          className="fw-bold"
-          style={{
-            fontFamily: "'Montserrat', sans-serif",
-            fontSize: "2rem",
-            marginBottom: "0.3rem",
-          }}
-        >
-          ReTone
-        </h1>
-        <div
-          style={{
-            fontFamily: "'Roboto', sans-serif",
-            fontSize: "1.05rem",
-            letterSpacing: "0.5px",
-            marginBottom: "0.2rem",
-          }}
-        >
-          — Email Tone Rewriter —
-        </div>
-        <div
-          className="fst-italic"
-          style={{
-            fontFamily: "'Roboto', sans-serif",
-            fontSize: "0.85rem",
-            opacity: 0.9,
-          }}
-        >
-          “Shift the tone, not the message.”
-        </div>
+        ReTone
       </div>
 
-      {/* 💬 Chat Area */}
-      <div className="p-3 overflow-auto flex-grow-1" style={{ height: "70vh" }}>
+      {/* Header */}
+      <div
+        className="text-center py-3 px-2"
+        style={{
+          background: "linear-gradient(135deg, #198754 0%, #28a745 100%)",
+          color: "#fff",
+          borderTopLeftRadius: "15px",
+          borderTopRightRadius: "15px",
+          zIndex: 1,
+        }}
+      >
+        <h3
+          className="mb-0"
+          style={{
+            fontFamily: "'Montserrat', sans-serif",
+            fontWeight: 700,
+            fontSize: "1.75rem",
+          }}
+        >
+          ✨ ReTone
+        </h3>
+        <small>Email Tone Rewriter</small><br />
+        <small className="fst-italic" style={{ fontSize: '0.8rem' }}>Shift the tone, not the message.</small>
+      </div>
+
+      {/* ✅ Scrollable Chat Area */}
+      <div
+        className="p-3 overflow-auto flex-grow-1"
+        style={{ height: "70vh", zIndex: 1 }}
+      >
         <div className="d-flex flex-column gap-3">
           {messages.map((msg, i) => (
             <div
@@ -127,27 +120,27 @@ export default function RewriterForm() {
                   ? "align-self-end bg-success text-white"
                   : "align-self-start bg-light text-dark"
               } px-3 py-2 rounded-pill`}
-              style={{ maxWidth: "75%" }}
             >
               {msg.content}
             </div>
           ))}
 
+          {/* Loading dots */}
           {isTyping && (
-            <div
-              className="align-self-start bg-light text-dark px-3 py-2 rounded-pill"
-              style={{ fontStyle: "italic", opacity: 0.8 }}
-            >
-              ✍️ Typing...
+            <div className="align-self-start bg-light text-dark px-3 py-2 rounded-pill">
+              <span className="typing-dots">
+                <span>.</span><span>.</span><span>.</span>
+              </span>
             </div>
           )}
         </div>
       </div>
 
-      {/* ⌨️ Input Bar */}
+      {/* Input Area */}
       <form
         onSubmit={handleSubmit}
         className="d-flex align-items-center gap-2 px-3 py-2 border-top"
+        style={{ zIndex: 1 }}
       >
         <select
           className="form-select form-select-sm w-auto"
@@ -161,15 +154,7 @@ export default function RewriterForm() {
           <option>Apologetic</option>
         </select>
 
-        <input
-          type="file"
-          id="fileUpload"
-          hidden
-          onChange={(e) => {
-            handleFileChange(e);
-            renderFilePreview();
-          }}
-        />
+        <input type="file" id="fileUpload" hidden onChange={handleFileChange} />
         <label htmlFor="fileUpload" className="btn btn-outline-secondary btn-sm">
           📎
         </label>
