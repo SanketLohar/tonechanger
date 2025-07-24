@@ -1,6 +1,5 @@
-package com.backend.demo.controller;
+package com.backend.demo;
 
-import com.backend.demo.service.OpenAIService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -9,7 +8,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "*") // ✅ Needed if frontend is on different port
 public class RewriteController {
 
     private final OpenAIService openAIService;
@@ -23,15 +21,13 @@ public class RewriteController {
         String text = request.get("text");
         String tone = request.get("tone");
 
-        System.out.println("📩 Text: " + text);
-        System.out.println("🎯 Tone: " + tone);
-
-        if (text == null || tone == null || text.isBlank() || tone.isBlank()) {
+        if (text == null || text.trim().isEmpty() || tone == null || tone.trim().isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Invalid input"));
         }
 
         String rewritten = openAIService.rewriteEmail(text.trim(), tone.trim());
-
-        return ResponseEntity.ok(Map.of("rewritten", rewritten));
+        Map<String, String> response = new HashMap<>();
+        response.put("rewritten", rewritten);
+        return ResponseEntity.ok(response);
     }
 }
