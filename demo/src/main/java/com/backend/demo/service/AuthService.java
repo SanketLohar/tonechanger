@@ -1,13 +1,13 @@
 package com.backend.demo.service;
 
+import com.backend.demo.dto.LoginRequest;
+import com.backend.demo.dto.RegisterRequest;
 import com.backend.demo.model.User;
 import com.backend.demo.repository.UserRepository;
 import com.backend.demo.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.*;
 
 @Service
 public class AuthService {
@@ -16,44 +16,35 @@ public class AuthService {
     private UserRepository userRepository;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
     private JwtUtil jwtUtil;
 
-    // ✅ Register New User
-    public String register(String email, String password) {
-        if (userRepository.findByEmail(email).isPresent()) {
-            return "⚠️ User already exists.";
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    public String register(RegisterRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("User already exists with email: " + request.getEmail());
         }
 
         User user = new User();
-        user.setEmail(email);
-        user.setPassword(passwordEncoder.encode(password));
-        user.setRoles(Collections.singletonList("USER"));
+        user.setEmail(request.getEmail());
+        user.setName(request.getName());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole("ROLE_USER");  // ✅ Set default role as a single string
 
         userRepository.save(user);
-        return "✅ User registered successfully.";
+
+        return jwtUtil.generateToken(user.getEmail());  // Simplified
     }
 
-    // ✅ Login User & Return Tokens
-    public Map<String, String> login(String email, String rawPassword) {
-        Optional<User> optionalUser = userRepository.findByEmail(email);
-        if (optionalUser.isEmpty()) {
-            throw new RuntimeException("⚠️ Invalid credentials.");
+    public String login(LoginRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Invalid credentials");
         }
 
-        User user = optionalUser.get();
-        if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
-            throw new RuntimeException("⚠️ Invalid credentials.");
-        }
-
-        String accessToken = jwtUtil.generateToken(user.getEmail(), user.getRoles(), false);
-        String refreshToken = jwtUtil.generateToken(user.getEmail(), user.getRoles(), true);
-
-        Map<String, String> tokens = new HashMap<>();
-        tokens.put("accessToken", accessToken);
-        tokens.put("refreshToken", refreshToken);
-        return tokens;
+        return jwtUtil.generateToken(user.getEmail());  // Simplified
     }
 }

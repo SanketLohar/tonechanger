@@ -1,32 +1,26 @@
 package com.backend.demo.controller;
 
-import com.backend.demo.service.AuthService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
+import org.springframework.beans.factory.annotation.Autowired;
+import com.backend.demo.service.AuthService;
+import com.backend.demo.dto.LoginRequest;
+import com.backend.demo.dto.RegisterRequest;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*")
 public class AuthController {
 
     @Autowired
     private AuthService authService;
 
-    // ✅ Register Endpoint
     @PostMapping("/register")
-    public String register(@RequestBody Map<String, String> request) {
-        String email = request.get("email");
-        String password = request.get("password");
-        return authService.register(email, password);
+    public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
+        return ResponseEntity.ok(authService.register(request));
     }
 
-    // ✅ Login Endpoint
     @PostMapping("/login")
-    public Map<String, String> login(@RequestBody Map<String, String> request) {
-        String email = request.get("email");
-        String password = request.get("password");
-        return authService.login(email, password);
+    public ResponseEntity<String> login(@RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.login(request));
     }
 }
