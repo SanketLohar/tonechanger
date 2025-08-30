@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, Card, Typography, Space, Divider, message } from 'antd';
-import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
+import { LockOutlined, MailOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { authAPI } from '../services/api';
 
@@ -12,23 +12,15 @@ const LoginPage = () => {
 
   const handleLogin = async (values) => {
     setLoading(true);
-    
     try {
-      console.log('Login attempt with:', values);
-      
-      // Real API call
       const response = await authAPI.login({
         email: values.email,
         password: values.password
       });
-      
-      // Store auth token
       localStorage.setItem('authToken', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
-      
       message.success('Login successful!');
       navigate('/dashboard');
-      
     } catch (error) {
       console.error('Login error:', error);
       const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
@@ -57,7 +49,9 @@ const LoginPage = () => {
           borderRadius: '16px',
           border: 'none',
         }}
-        bodyStyle={{ padding: '40px' }}
+        // ✅ FIX: The deprecated `bodyStyle` prop has been removed.
+        // The `styles` prop you added is correct.
+        styles={{ body: { padding: '40px' } }}
       >
         <Space direction="vertical" size="large" style={{ width: '100%', textAlign: 'center' }}>
           <div>
@@ -72,9 +66,7 @@ const LoginPage = () => {
               Shift the tone, not the message
             </Text>
           </div>
-
           <Divider />
-
           <Form
             name="login"
             onFinish={handleLogin}
@@ -96,7 +88,6 @@ const LoginPage = () => {
                 style={{ borderRadius: '8px' }}
               />
             </Form.Item>
-
             <Form.Item
               name="password"
               label="Password"
@@ -108,7 +99,6 @@ const LoginPage = () => {
                 style={{ borderRadius: '8px' }}
               />
             </Form.Item>
-
             <Form.Item style={{ marginBottom: 16 }}>
               <Button
                 type="primary"
@@ -126,7 +116,6 @@ const LoginPage = () => {
               </Button>
             </Form.Item>
           </Form>
-
           <Space direction="vertical" size="small">
             <Text style={{ color: '#666' }}>
               Don't have an account?{' '}

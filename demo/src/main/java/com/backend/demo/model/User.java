@@ -1,19 +1,25 @@
 package com.backend.demo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
-
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+import java.util.List;
 
 @Entity
-@Data
+@Data // Provides getters, setters, toString, equals, and hashCode
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "users") // Good practice to specify table name
 public class User implements UserDetails {
 
     @Id
@@ -21,38 +27,71 @@ public class User implements UserDetails {
     private Long id;
 
     private String name;
+
+    @Column(unique = true, nullable = false)
     private String email;
+
+    @JsonIgnore // Ensures password is not sent in API responses
     private String password;
 
-    // ✅ Add this if it's missing
     private String role;
 
+    // --- UserDetails Interface Methods ---
 
-    public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
-
-    // UserDetails Interface Methods
+    /**
+     * ✅ CORRECTED: This now returns the user's role as a security authority.
+     * This is crucial for @PreAuthorize and other role-based security to work.
+     */
     @Override
+    @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList(); // or provide role-based authorities if needed
+        if (this.role == null) {
+            return Collections.emptyList();
+        }
+        // Spring Security needs a list of GrantedAuthority
+        return List.of(new SimpleGrantedAuthority(this.role));
     }
+
+    // Inside your User.java file
+
+// ... other methods and fields
 
     @Override
     public String getUsername() {
-        return email;
+        // ✅ ADD THIS NULL CHECK FOR DEBUGGING
+        if (this.email == null || this.email.isEmpty()) {
+            throw new IllegalArgumentException("User email cannot be null or empty.");
+        }
+        return this.email;
+    }
+
+    // ... other methods
+    @Override
+    public String getPassword() {
+        return this.password;
     }
 
     @Override
-    public boolean isAccountNonExpired() { return true; }
+    @JsonIgnore
+    public boolean isAccountNonExpired() {
+        return true;
+    }
 
     @Override
-    public boolean isAccountNonLocked() { return true; }
+    @JsonIgnore
+    public boolean isAccountNonLocked() {
+        return true;
+    }
 
     @Override
-    public boolean isCredentialsNonExpired() { return true; }
+    @JsonIgnore
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
 
     @Override
-    public boolean isEnabled() { return true; }
-
-    // You can still add getters/setters manually or use Lombok @Data
+    @JsonIgnore
+    public boolean isEnabled() {
+        return true;
+    }
 }

@@ -7,9 +7,16 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class DemoApplication {
 	public static void main(String[] args) {
-		// ✅ Load environment variables from .env file
-		Dotenv dotenv = Dotenv.load();
-		System.setProperty("GEMINI_API_KEY", dotenv.get("GEMINI_API_KEY"));
+
+		Dotenv dotenv = Dotenv.configure()
+				.ignoreIfMissing() // Doesn't crash if .env is not there
+				.load();
+
+
+		dotenv.entries().forEach(entry -> {
+			System.setProperty(entry.getKey(), entry.getValue());
+		});
+
 
 		SpringApplication.run(DemoApplication.class, args);
 	}

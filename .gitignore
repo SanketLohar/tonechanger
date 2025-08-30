@@ -1,17 +1,17 @@
 # ========================
 # React Frontend
 # ========================
-frontend/node_modules/
-frontend/.env
-frontend/dist/
-frontend/build/
+project/node_modules/
+project/.env
+project/dist/
+project/build/
 
 # ========================
 # Spring Boot Backend
 # ========================
-backend/target/
-backend/.env
-backend/logs/
+demo/target/
+demo/.env
+demo/logs/
 *.log
 *.iml
 *.class
@@ -29,3 +29,6 @@ backend/logs/
 # OS generated
 .DS_Store
 Thumbs.db
+
+
+*.env

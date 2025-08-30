@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Form, Input, Button, Card, Typography, Space, Divider, message } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
-import { authAPI } from '../services/api';
+import { authAPI } from '../services/api.js';
 
 const { Title, Text } = Typography;
 
@@ -12,20 +12,16 @@ const RegisterPage = () => {
 
   const handleRegister = async (values) => {
     setLoading(true);
-    
     try {
-      console.log('Registration attempt with:', values);
-      
-      // Real API call
-      await authAPI.register({
+      const response = await authAPI.register({
         name: values.name,
         email: values.email,
         password: values.password
       });
-      
-      message.success('Registration successful! Please log in.');
-      navigate('/login');
-      
+      localStorage.setItem('authToken', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+      message.success('Registration successful! Welcome!');
+      navigate('/dashboard');
     } catch (error) {
       console.error('Registration error:', error);
       const errorMessage = error.response?.data?.message || 'Registration failed. Please try again.';
@@ -54,7 +50,9 @@ const RegisterPage = () => {
           borderRadius: '16px',
           border: 'none',
         }}
-        bodyStyle={{ padding: '40px' }}
+        // ✅ FIX: The deprecated `bodyStyle` prop has been removed.
+        // The `styles` prop you added is correct.
+        styles={{ body: { padding: '40px' } }}
       >
         <Space direction="vertical" size="large" style={{ width: '100%', textAlign: 'center' }}>
           <div>
@@ -69,9 +67,7 @@ const RegisterPage = () => {
               Start rewriting emails with perfect tone
             </Text>
           </div>
-
           <Divider />
-
           <Form
             name="register"
             onFinish={handleRegister}
@@ -93,7 +89,6 @@ const RegisterPage = () => {
                 style={{ borderRadius: '8px' }}
               />
             </Form.Item>
-
             <Form.Item
               name="email"
               label="Email"
@@ -108,7 +103,6 @@ const RegisterPage = () => {
                 style={{ borderRadius: '8px' }}
               />
             </Form.Item>
-
             <Form.Item
               name="password"
               label="Password"
@@ -123,7 +117,6 @@ const RegisterPage = () => {
                 style={{ borderRadius: '8px' }}
               />
             </Form.Item>
-
             <Form.Item
               name="confirmPassword"
               label="Confirm Password"
@@ -146,7 +139,6 @@ const RegisterPage = () => {
                 style={{ borderRadius: '8px' }}
               />
             </Form.Item>
-
             <Form.Item style={{ marginBottom: 16 }}>
               <Button
                 type="primary"
@@ -164,7 +156,6 @@ const RegisterPage = () => {
               </Button>
             </Form.Item>
           </Form>
-
           <Space direction="vertical" size="small">
             <Text style={{ color: '#666' }}>
               Already have an account?{' '}
@@ -180,3 +171,4 @@ const RegisterPage = () => {
 };
 
 export default RegisterPage;
+

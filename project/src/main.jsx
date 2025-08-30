@@ -2,7 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
 import './index.css';
-import { ConfigProvider } from 'antd';
+// ✅ FIX: Import the Ant Design App provider
+import { ConfigProvider, App as AntApp } from 'antd';
 
 const theme = {
   token: {
@@ -15,7 +16,10 @@ const theme = {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ConfigProvider theme={theme}>
-      <App />
+      {/* ✅ FIX: Wrap your App component with Ant Design's App provider */}
+      <AntApp>
+        <App />
+      </AntApp>
     </ConfigProvider>
   </React.StrictMode>,
 );

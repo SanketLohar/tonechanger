@@ -2,14 +2,15 @@ import axios from 'axios';
 
 // Create axios instance with environment-based URL
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001/api',
+  // ✅ FIX: Changed the default port from 3001 to 8080 to match your backend server.
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api',
   headers: {
     'Content-Type': 'application/json',
   },
   timeout: 10000, // 10 second timeout
 });
 
-// Request interceptor for auth token (placeholder)
+// Request interceptor for auth token
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('authToken');
@@ -23,12 +24,13 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor for error handling (placeholder)
+// Response interceptor for error handling
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('authToken');
+      localStorage.removeItem('user'); // Also remove user on auth error
       window.location.href = '/login';
     }
     return Promise.reject(error);
@@ -57,3 +59,4 @@ export const userAPI = {
 };
 
 export default api;
+
