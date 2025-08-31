@@ -48,7 +48,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 8080;
 
 // Middleware
 app.use(cors({
@@ -166,7 +166,7 @@ module.exports = router;
 ## 5. Environment Variables (.env)
 
 ```env
-PORT=3001
+PORT=8080
 JWT_SECRET=your-super-secret-jwt-key
 OPENAI_API_KEY=your-openai-api-key
 GEMINI_API_KEY=your-gemini-api-key
@@ -198,7 +198,7 @@ npm run dev
 
 ### Register User:
 ```
-POST http://localhost:3001/api/auth/register
+POST http://localhost:8080/api/auth/register
 Content-Type: application/json
 
 {
@@ -210,7 +210,7 @@ Content-Type: application/json
 
 ### Login:
 ```
-POST http://localhost:3001/api/auth/login
+POST http://localhost:8080/api/auth/login
 Content-Type: application/json
 
 {
@@ -221,7 +221,7 @@ Content-Type: application/json
 
 ### Rewrite Email:
 ```
-POST http://localhost:3001/api/email/rewrite
+POST http://localhost:8080/api/email/rewrite
 Authorization: Bearer YOUR_JWT_TOKEN
 Content-Type: application/json
 

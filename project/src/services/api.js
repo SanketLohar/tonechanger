@@ -1,16 +1,19 @@
 import axios from 'axios';
 
-// Create axios instance with environment-based URL
+// Create a centralized Axios instance for the entire application
 const api = axios.create({
-  // ✅ FIX: Changed the default port from 3001 to 8080 to match your backend server.
+  // This URL correctly points to your Spring Boot backend.
+  // It also allows for a production URL to be set via environment variables.
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api',
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000, // 10 second timeout
+  timeout: 10000, // Request will time out after 10 seconds
 });
 
-// Request interceptor for auth token
+// Axios Request Interceptor:
+// This function automatically attaches the JWT to the Authorization header
+// for every single request that is sent from the frontend.
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('authToken');
@@ -24,38 +27,34 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor for error handling
+// Axios Response Interceptor:
+// This function handles global API errors. If a 401 Unauthorized error
+// occurs (e.g., token is expired or invalid), it automatically logs the
+// user out and redirects them to the login page.
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('authToken');
-      localStorage.removeItem('user'); // Also remove user on auth error
+      localStorage.removeItem('user');
       window.location.href = '/login';
     }
     return Promise.reject(error);
   }
 );
 
-// API endpoints
+// Organized API endpoints for different parts of the application
 export const authAPI = {
   login: (credentials) => api.post('/auth/login', credentials),
   register: (userData) => api.post('/auth/register', userData),
-  logout: () => api.post('/auth/logout'),
-  refreshToken: () => api.post('/auth/refresh'),
 };
 
 export const emailAPI = {
   rewriteEmail: (data) => api.post('/email/rewrite', data),
-  uploadFile: (formData) => api.post('/email/upload', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  }),
-  getHistory: () => api.get('/email/history'),
 };
 
 export const userAPI = {
   getProfile: () => api.get('/user/profile'),
-  updateProfile: (data) => api.put('/user/profile', data),
 };
 
 export default api;
