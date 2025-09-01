@@ -1,27 +1,22 @@
 package com.backend.demo.dto;
 
 public class RewriteRequest {
-
-    private String prompt;
+    private String text;
     private String tone;
 
-    // Default constructor
-    public RewriteRequest() {
-    }
+    public RewriteRequest() {}
 
-    // All-args constructor
-    public RewriteRequest(String prompt, String tone) {
-        this.prompt = prompt;
+    public RewriteRequest(String text, String tone) {
+        this.text = text;
         this.tone = tone;
     }
 
-    // Getters and Setters
-    public String getPrompt() {
-        return prompt;
+    public String getText() {
+        return text;
     }
 
-    public void setPrompt(String prompt) {
-        this.prompt = prompt;
+    public void setText(String text) {
+        this.text = text;
     }
 
     public String getTone() {

@@ -50,7 +50,7 @@ export const authAPI = {
 };
 
 export const emailAPI = {
-  rewriteEmail: (data) => api.post('/email/rewrite', data),
+  rewriteEmail: (data) => api.post('/rewrite', data),
 };
 
 export const userAPI = {

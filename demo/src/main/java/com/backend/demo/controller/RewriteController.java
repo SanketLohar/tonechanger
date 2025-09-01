@@ -5,25 +5,72 @@ import com.backend.demo.service.GeminiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.nio.charset.StandardCharsets;
 
 @RestController
 @RequestMapping("/api/rewrite")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class RewriteController {
 
-    @Autowired
-    private GeminiService geminiService;
+    private final GeminiService geminiService;
 
+    @Autowired
+    public RewriteController(GeminiService geminiService) {
+        this.geminiService = geminiService;
+    }
+
+    // Rewrite from plain JSON request
     @PostMapping
     public ResponseEntity<String> rewrite(@RequestBody RewriteRequest request) {
-        String prompt = request.getPrompt();
-        String tone = request.getTone();
+        try {
+            String text = request.getText();
+            String tone = request.getTone();
 
-        if (prompt == null || prompt.trim().isEmpty() || tone == null || tone.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body("Both prompt and tone are required.");
+            if (text == null || text.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Text is required.");
+            }
+            if (tone == null || tone.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Tone is required.");
+            }
+
+            String rewrittenText = geminiService.getGeminiResponse(text, tone);
+            return ResponseEntity.ok(rewrittenText);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                    .body("Error while rewriting: " + e.getMessage());
         }
+    }
 
-        String result = geminiService.getGeminiResponse(prompt, tone);
-        return ResponseEntity.ok(result);
+    // Rewrite from uploaded file
+    @PostMapping("/upload")
+    public ResponseEntity<String> rewriteFromFile(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("tone") String tone) {
+        try {
+            if (file == null || file.isEmpty()) {
+                return ResponseEntity.badRequest().body("File is required.");
+            }
+            if (tone == null || tone.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Tone is required.");
+            }
+
+            String text = new String(file.getBytes(), StandardCharsets.UTF_8);
+
+            if (text.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Uploaded file is empty.");
+            }
+
+            String rewrittenText = geminiService.getGeminiResponse(text, tone);
+            return ResponseEntity.ok(rewrittenText);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                    .body("Error while rewriting file: " + e.getMessage());
+        }
     }
 }

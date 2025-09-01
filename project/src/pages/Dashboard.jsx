@@ -5,7 +5,7 @@ import Header from '../components/Header';
 import ChatBubble from '../components/ChatBubble';
 import ToneSelector from '../components/ToneSelector';
 import FileUploader from '../components/FileUploader';
-import { emailAPI } from '../services/api';
+import emailAPI from '../services/emailAPI'; // ✅ import fixed
 
 const { Content } = Layout;
 const { TextArea } = Input;
@@ -56,16 +56,19 @@ const Dashboard = () => {
     setLoading(true);
 
     try {
-      // Real API call to rewrite email
-      const response = await emailAPI.rewriteEmail({
-        originalText: inputText,
-        tone: selectedTone,
-        userId: JSON.parse(localStorage.getItem('user') || '{}').id
-      });
+      // ✅ Call backend
+      const response = await emailAPI.rewriteEmail(inputText, selectedTone);
+
+      // ✅ Safely extract AI text (Gemini returns structured object)
+      let aiText =
+        response.data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+        response.data?.output ||
+        response.data?.message ||
+        JSON.stringify(response.data); // fallback to raw JSON if unexpected
 
       const aiResponse = {
         id: Date.now() + 1,
-        text: response.data.rewrittenText || `Here's your email rewritten in a ${selectedTone} tone:\n\n"${response.data.result}"\n\nWould you like me to try a different tone?`,
+        text: aiText,
         isUser: false,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
@@ -75,8 +78,8 @@ const Dashboard = () => {
       console.error('Email rewrite error:', error);
       const errorMessage = error.response?.data?.message || 'Failed to rewrite email. Please try again.';
       message.error(errorMessage);
-      
-      // Remove user message if API call failed
+
+      // Rollback user message if request failed
       setMessages(prev => prev.slice(0, -1));
     } finally {
       setLoading(false);
@@ -84,7 +87,6 @@ const Dashboard = () => {
   };
 
   const handleFileSelect = (file) => {
-    // Placeholder file handling
     message.info(`File "${file.name}" will be processed once backend is connected`);
   };
 
@@ -98,14 +100,13 @@ const Dashboard = () => {
   return (
     <Layout style={{ minHeight: '100vh', backgroundColor: '#fefdf6' }}>
       <Header />
-      
-      {/* Watermark */}
+
       <div className="watermark">
         Shift the tone, not the message
       </div>
 
       <Content style={{ padding: '0', display: 'flex', flexDirection: 'column', backgroundColor: '#fefdf6' }}>
-        {/* Tone Selector Bar */}
+        {/* Tone Selector */}
         <div style={{ 
           backgroundColor: 'white', 
           borderBottom: '1px solid #f0f0f0',
@@ -121,7 +122,7 @@ const Dashboard = () => {
           </Row>
         </div>
 
-        {/* Chat Messages Area */}
+        {/* Messages */}
         <div 
           className="chat-container"
           style={{ 
@@ -150,7 +151,7 @@ const Dashboard = () => {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input Area */}
+        {/* Input */}
         <div style={{ 
           backgroundColor: 'white', 
           borderTop: '1px solid #f0f0f0',
