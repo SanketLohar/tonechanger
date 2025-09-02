@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import { Button, message } from "antd";
 import { PaperClipOutlined } from "@ant-design/icons";
-import emailAPI from "../services/emailAPI"; // ✅ fixed import
+import emailAPI from "../services/emailAPI"; // ✅ import API
 
 const FileUploader = ({ onFileSelect, tone }) => {
   const fileInputRef = useRef(null);
@@ -27,20 +27,27 @@ const FileUploader = ({ onFileSelect, tone }) => {
         return;
       }
 
-      // ✅ Real file upload
+      // ✅ Protected file upload with JWT
       try {
         const response = await emailAPI.uploadFile(file, tone);
+
         message.success(`File "${file.name}" uploaded successfully`);
 
-        // Pass extracted text back to parent component
-        onFileSelect &&
+        // Pass extracted text back to parent
+        if (onFileSelect) {
           onFileSelect({
             file,
             extractedText: response.data.extractedText,
           });
+        }
       } catch (error) {
         console.error("File upload error:", error);
-        message.error("Failed to upload file. Please try again.");
+
+        if (error.response?.status === 401) {
+          message.error("Unauthorized! Please log in again.");
+        } else {
+          message.error("Failed to upload file. Please try again.");
+        }
       }
     }
   };
