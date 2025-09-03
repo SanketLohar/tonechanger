@@ -1,8 +1,10 @@
 package com.backend.demo.controller;
 
 import com.backend.demo.dto.RewriteRequest;
+import com.backend.demo.dto.RewriteResponse;
 import com.backend.demo.service.GeminiService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -11,7 +13,7 @@ import java.nio.charset.StandardCharsets;
 
 @RestController
 @RequestMapping("/api/rewrite")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+// The redundant @CrossOrigin annotation has been removed to rely on the global CORS configuration.
 public class RewriteController {
 
     private final GeminiService geminiService;
@@ -21,9 +23,9 @@ public class RewriteController {
         this.geminiService = geminiService;
     }
 
-    // Rewrite from plain JSON request
-    @PostMapping
-    public ResponseEntity<String> rewrite(@RequestBody RewriteRequest request) {
+    // Rewrite from plain JSON request, producing a JSON response
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> rewrite(@RequestBody RewriteRequest request) {
         try {
             String text = request.getText();
             String tone = request.getTone();
@@ -36,7 +38,8 @@ public class RewriteController {
             }
 
             String rewrittenText = geminiService.getGeminiResponse(text, tone);
-            return ResponseEntity.ok(rewrittenText);
+            // Wrap the response in a DTO for a consistent JSON structure
+            return ResponseEntity.ok(new RewriteResponse(rewrittenText));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -45,9 +48,13 @@ public class RewriteController {
         }
     }
 
-    // Rewrite from uploaded file
-    @PostMapping("/upload")
-    public ResponseEntity<String> rewriteFromFile(
+    // Rewrite from uploaded file (multipart), producing a JSON response
+    @PostMapping(
+            path = "/upload",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<?> rewriteFromFile(
             @RequestParam("file") MultipartFile file,
             @RequestParam("tone") String tone) {
         try {
@@ -65,7 +72,8 @@ public class RewriteController {
             }
 
             String rewrittenText = geminiService.getGeminiResponse(text, tone);
-            return ResponseEntity.ok(rewrittenText);
+            // Also wrap this response in the DTO
+            return ResponseEntity.ok(new RewriteResponse(rewrittenText));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -74,3 +82,4 @@ public class RewriteController {
         }
     }
 }
+

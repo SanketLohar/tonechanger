@@ -2,6 +2,7 @@ package com.backend.demo.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -46,6 +47,7 @@ public class SecurityConfig {
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        // Apply to all routes
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
@@ -57,13 +59,17 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // allow preflight so CORS doesn't 403
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // open auth routes
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/rewrite/**").authenticated() // requires JWT
+                        // protect rewrite APIs with JWT
+                        .requestMatchers("/api/rewrite/**").authenticated()
+                        // everything else is denied
                         .anyRequest().denyAll()
                 );
 
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     }
 }

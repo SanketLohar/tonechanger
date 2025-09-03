@@ -1,12 +1,12 @@
 // src/api/emailAPI.js
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:8080/api";
+const API_BASE_URL = "http://localhost:8080/api"; // ✅ remove /rewrite
 
 const emailAPI = {
   // Rewrite Email (JSON body)
   rewriteEmail: (text, tone) => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("authToken"); // FIXED KEY
 
     return axios.post(
       `${API_BASE_URL}/rewrite`,
@@ -26,7 +26,7 @@ const emailAPI = {
     formData.append("file", file);
     formData.append("tone", tone);
 
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("authToken"); // FIXED KEY
 
     return axios.post(`${API_BASE_URL}/rewrite/upload`, formData, {
       headers: {
