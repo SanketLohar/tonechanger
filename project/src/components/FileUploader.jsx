@@ -68,7 +68,7 @@ const FileUploader = ({ onFileUpload, tone }) => {
           <Text style={{ maxWidth: 150 }} ellipsis={{ tooltip: selectedFile.name }}>
             {selectedFile.name}
           </Text>
-          <Button
+          <Butt
             type="text"
             icon={loading ? <Spin size="small" /> : <CloseCircleOutlined />}
             onClick={handleClearFile}
