@@ -13,12 +13,16 @@ const LoginPage = () => {
   const handleLogin = async (values) => {
     setLoading(true);
     try {
-      const response = await authAPI.login({
-        email: values.email,
-        password: values.password
-      });
-      localStorage.setItem('authToken', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+      // ✅ Using new authAPI from api.js
+      const response = await authAPI.login(values);
+
+      // Extract token and user from backend response
+      const { token, user } = response.data;
+
+      // Save to localStorage
+      localStorage.setItem('authToken', token);
+      localStorage.setItem('user', JSON.stringify(user));
+
       message.success('Login successful!');
       navigate('/dashboard');
     } catch (error) {
@@ -49,8 +53,6 @@ const LoginPage = () => {
           borderRadius: '16px',
           border: 'none',
         }}
-        // ✅ FIX: The deprecated `bodyStyle` prop has been removed.
-        // The `styles` prop you added is correct.
         styles={{ body: { padding: '40px' } }}
       >
         <Space direction="vertical" size="large" style={{ width: '100%', textAlign: 'center' }}>

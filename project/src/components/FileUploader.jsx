@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { Button, message, Space, Spin, Typography } from "antd";
-import { PaperClipOutlined, CloseCircleOutlined } from "@ant-design/icons";
+import { PaperClipOutlined, CloseCircleOutlined, SendOutlined } from "@ant-design/icons";
 import emailAPI from "../services/emailAPI";
 
 const { Text } = Typography;
@@ -17,43 +17,49 @@ const FileUploader = ({ onFileUpload, tone }) => {
   const handleClearFile = () => {
     setSelectedFile(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = ""; // This is crucial to allow re-selecting the same file
+      fileInputRef.current.value = ""; // allow re-selecting same file
     }
   };
 
-  const handleFileChange = async (event) => {
+  const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
-    // Basic file validation
     if (file.size > 5 * 1024 * 1024) {
       message.error("File size must be less than 5MB");
       return;
     }
 
+    setSelectedFile(file);
+    message.success(`File "${file.name}" selected. Now click Send to process.`);
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      message.error("Please select a file first!");
+      return;
+    }
+
     setLoading(true);
-    setSelectedFile(file); // Show the file name in the UI immediately
-
     try {
-      // Read the content of the file on the client-side
-      const originalText = await file.text();
-      // Send the file to the backend for processing
-      const response = await emailAPI.uploadFile(file, tone);
+      const originalText = await selectedFile.text();
+      const response = await emailAPI.uploadFile(selectedFile, tone);
 
-      message.success(`File "${file.name}" processed successfully`);
+      message.success(`File "${selectedFile.name}" processed successfully`);
 
-      // Communicate back to the parent component (RewriterForm)
       if (onFileUpload) {
         onFileUpload({
           originalText,
           rewrittenText: response.data.rewrittenText,
-          file,
+          file: selectedFile,
         });
       }
+
+      // ✅ Do NOT clear file after upload anymore
+      // handleClearFile();
     } catch (error) {
       console.error("File upload error:", error);
       message.error("Failed to process file. Please try again.");
-      handleClearFile(); // Reset the UI if an error occurs
     } finally {
       setLoading(false);
     }
@@ -61,7 +67,6 @@ const FileUploader = ({ onFileUpload, tone }) => {
 
   return (
     <>
-      {/* Conditionally render the UI based on whether a file is selected */}
       {selectedFile ? (
         <Space>
           <PaperClipOutlined />
@@ -75,6 +80,15 @@ const FileUploader = ({ onFileUpload, tone }) => {
             disabled={loading}
             danger
           />
+          <Button
+            type="primary"
+            icon={<SendOutlined />}
+            onClick={handleUpload}
+            loading={loading}
+            disabled={!selectedFile}
+          >
+            Send
+          </Button>
         </Space>
       ) : (
         <Button
@@ -85,6 +99,7 @@ const FileUploader = ({ onFileUpload, tone }) => {
           Attach File
         </Button>
       )}
+
       <input
         ref={fileInputRef}
         type="file"
@@ -98,4 +113,3 @@ const FileUploader = ({ onFileUpload, tone }) => {
 };
 
 export default FileUploader;
-

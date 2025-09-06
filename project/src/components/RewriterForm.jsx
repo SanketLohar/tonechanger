@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button, Input, Select, Card, message, Space } from "antd";
-import emailAPI from "../api/emailAPI";
-import FileUploader from "./FileUploader"; // Import the FileUploader
+import emailAPI from "../services/emailAPI";
+import FileUploader from "./FileUploader";
 
 const { TextArea } = Input;
 
@@ -20,8 +20,9 @@ const RewriterForm = () => {
     setLoading(true);
     try {
       const res = await emailAPI.rewriteEmail(text, tone);
-      // The API now returns a JSON object, so we access `rewrittenText`
-      setRewrittenText(res.data.rewrittenText || "No response from server");
+      // Replace all literal \n (escaped or double-escaped) with real line breaks
+      const cleanedText = res.data.rewrittenText.replace(/\\n|\\\\n/g, "\n");
+      setRewrittenText(cleanedText);
       message.success("Text rewritten successfully!");
     } catch (error) {
       console.error("Rewrite error:", error);
@@ -35,10 +36,11 @@ const RewriterForm = () => {
     }
   };
 
-  // This function will be called by the FileUploader when a file is processed
   const handleFileUploaded = ({ originalText, rewrittenText }) => {
-    setText(originalText); // Update the text area with the file's content
-    setRewrittenText(rewrittenText); // Display the rewritten text from the file
+    setText(originalText);
+    // Replace all literal \n (escaped or double-escaped) with real line breaks
+    const cleanedText = rewrittenText.replace(/\\n|\\\\n/g, "\n");
+    setRewrittenText(cleanedText);
   };
 
   return (
@@ -51,7 +53,6 @@ const RewriterForm = () => {
       />
 
       <div className="flex flex-wrap items-center justify-between gap-4 mt-3">
-        {/* We use Ant Design's Space component for better alignment */}
         <Space>
           <Select value={tone} onChange={setTone} style={{ width: 150 }}>
             <Select.Option value="formal">Formal</Select.Option>
@@ -59,10 +60,6 @@ const RewriterForm = () => {
             <Select.Option value="polite">Polite</Select.Option>
             <Select.Option value="professional">Professional</Select.Option>
           </Select>
-          {/* This is where the FileUploader component is now being rendered.
-            We pass it the current `tone` and the `handleFileUploaded` function
-            so it can communicate back to this form.
-          */}
           <FileUploader tone={tone} onFileUpload={handleFileUploaded} />
         </Space>
 
@@ -73,7 +70,9 @@ const RewriterForm = () => {
 
       {rewrittenText && (
         <Card title="Rewritten Email" className="mt-4 bg-gray-50" bordered={false}>
-          <p style={{ whiteSpace: "pre-wrap" }}>{rewrittenText}</p>
+          <div style={{ whiteSpace: "pre-wrap" }}>
+            {rewrittenText}
+          </div>
         </Card>
       )}
     </Card>
@@ -81,4 +80,3 @@ const RewriterForm = () => {
 };
 
 export default RewriterForm;
-

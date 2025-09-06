@@ -2,8 +2,6 @@ import axios from 'axios';
 
 // Create a centralized Axios instance for the entire application
 const api = axios.create({
-  // This URL correctly points to your Spring Boot backend.
-  // It also allows for a production URL to be set via environment variables.
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api',
   headers: {
     'Content-Type': 'application/json',
@@ -11,30 +9,32 @@ const api = axios.create({
   timeout: 10000, // Request will time out after 10 seconds
 });
 
-// Axios Request Interceptor:
-// This function automatically attaches the JWT to the Authorization header
-// for every single request that is sent from the frontend.
+// Axios Request Interceptor
+// Attach JWT token automatically for protected routes (not auth/login/register)
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('authToken');
-    if (token) {
+
+    // Skip attaching token for auth endpoints
+    if (
+      token &&
+      !config.url.includes('/auth/login') &&
+      !config.url.includes('/auth/register')
+    ) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Axios Response Interceptor:
-// This function handles global API errors. If a 401 Unauthorized error
-// occurs (e.g., token is expired or invalid), it automatically logs the
-// user out and redirects them to the login page.
+// Axios Response Interceptor
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      // Token expired or invalid → clear storage and redirect
       localStorage.removeItem('authToken');
       localStorage.removeItem('user');
       window.location.href = '/login';
@@ -43,12 +43,33 @@ api.interceptors.response.use(
   }
 );
 
-// Organized API endpoints for different parts of the application
+// ----------------------
+// API Endpoints
+// ----------------------
+
+// Auth endpoints → explicitly avoid token
 export const authAPI = {
-  login: (credentials) => api.post('/auth/login', credentials),
-  register: (userData) => api.post('/auth/register', userData),
+  login: async (credentials) => {
+    // Always clear old token before trying login
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    return axios.post(
+      `${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/auth/login`,
+      credentials,
+      { headers: { 'Content-Type': 'application/json' } }
+    );
+  },
+
+  register: (userData) => {
+    return axios.post(
+      `${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/auth/register`,
+      userData,
+      { headers: { 'Content-Type': 'application/json' } }
+    );
+  },
 };
 
+// Protected endpoints → go through api (JWT auto-attached)
 export const emailAPI = {
   rewriteEmail: (data) => api.post('/rewrite', data),
 };
