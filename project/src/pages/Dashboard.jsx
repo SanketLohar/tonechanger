@@ -21,12 +21,11 @@ const Dashboard = () => {
   ]);
 
   const [inputText, setInputText] = useState('');
-  const [selectedFile, setSelectedFile] = useState(null); // State for the uploaded file
+  const [selectedFile, setSelectedFile] = useState(null);
   const [selectedTone, setSelectedTone] = useState('polite');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
-  // The Send button is disabled only if there's no text AND no file
   const isSendDisabled = !inputText.trim() && !selectedFile;
 
   const scrollToBottom = () => {
@@ -46,7 +45,6 @@ const Dashboard = () => {
     setLoading(true);
     let userMessageText = inputText;
 
-    // If a file is selected, read its content to display in the chat
     if (selectedFile) {
       try {
         userMessageText = await selectedFile.text();
@@ -66,24 +64,40 @@ const Dashboard = () => {
 
     setMessages(prev => [...prev, userMessage]);
     setInputText('');
-    setSelectedFile(null); // Clear the file after preparing it for send
+    setSelectedFile(null);
 
     try {
       let response;
-      // Call the appropriate API based on whether a file or text is being sent
       if (selectedFile) {
         response = await emailAPI.uploadFile(selectedFile, selectedTone);
       } else {
         response = await emailAPI.rewriteEmail({ text: inputText, tone: selectedTone });
       }
 
-      // Safely extract rewritten text from the API response
-      const aiText = response.data.rewrittenText.replace(/\\n|\\\\n/g, "\n") 
-        || "Sorry, I couldn't process that.";
+      // ✅ --- NEW: Robust response parsing logic --- ✅
+      let aiText;
+      const responseData = response.data;
+
+      if (responseData.rewrittenText) {
+        // Handles format: { "rewrittenText": "..." }
+        aiText = responseData.rewrittenText;
+      } else if (responseData?.candidates?.[0]?.content?.parts?.[0]?.text) {
+        // Handles raw Gemini API format
+        aiText = responseData.candidates[0].content.parts[0].text;
+      } else if (typeof responseData === 'string') {
+        // Handles if the backend sends just a plain string
+        aiText = responseData;
+      } else {
+        // Fallback for any other unexpected format
+        aiText = `Sorry, the response was in an unexpected format. Raw data: ${JSON.stringify(responseData)}`;
+      }
+      
+      const cleanedText = aiText.replace(/\\n|\\\\n/g, "\n");
+      // ✅ --- End of new logic --- ✅
 
       const aiResponse = {
         id: Date.now() + 1,
-        text: aiText,
+        text: cleanedText,
         isUser: false,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
@@ -93,21 +107,19 @@ const Dashboard = () => {
       console.error('Email rewrite error:', error);
       const errorMessage = error.response?.data?.message || 'Failed to rewrite. Please try again.';
       message.error(errorMessage);
-      setMessages(prev => prev.slice(0, -1)); // Rollback user message on failure
+      setMessages(prev => prev.slice(0, -1));
     } finally {
       setLoading(false);
     }
   };
 
-  // When a file is selected, update the state and clear the text input
   const handleFileSelect = (file) => {
     setSelectedFile(file);
     if (file) {
-      setInputText(''); // Prioritize file over text
+      setInputText('');
     }
   };
   
-  // When a file is cleared, update the state
   const handleClearFile = () => {
     setSelectedFile(null);
   };
@@ -152,7 +164,7 @@ const Dashboard = () => {
               onChange={(e) => {
                 setInputText(e.target.value);
                 if (selectedFile) {
-                  setSelectedFile(null); // If user types, clear the selected file
+                  setSelectedFile(null);
                 }
               }}
               onKeyPress={handleKeyPress}
@@ -173,7 +185,7 @@ const Dashboard = () => {
                 icon={<SendOutlined />}
                 onClick={handleSend}
                 loading={loading}
-                disabled={isSendDisabled || loading} // Ensure button is disabled while loading
+                disabled={isSendDisabled || loading}
                 style={{ border: 'none', boxShadow: 'none', backgroundColor: '#52c41a', borderRadius: '8px', height: '36px', width: '36px', minWidth: '36px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '8px' }}
               />
             </div>
