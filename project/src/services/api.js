@@ -1,21 +1,25 @@
+// src/api/api.js
 import axios from 'axios';
 
-// Create a centralized Axios instance for the entire application
+// ----------------------
+// Axios instance
+// ----------------------
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api',
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000, // Request will time out after 10 seconds
+  timeout: 50000, // 10 seconds
 });
 
-// Axios Request Interceptor
-// Attach JWT token automatically for protected routes (not auth/login/register)
+// ----------------------
+// Request Interceptor
+// ----------------------
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('authToken');
 
-    // Skip attaching token for auth endpoints
+    // Skip auth endpoints
     if (
       token &&
       !config.url.includes('/auth/login') &&
@@ -23,13 +27,14 @@ api.interceptors.request.use(
     ) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Axios Response Interceptor
+// ----------------------
+// Response Interceptor
+// ----------------------
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -47,33 +52,40 @@ api.interceptors.response.use(
 // API Endpoints
 // ----------------------
 
-// Auth endpoints → explicitly avoid token
+// Auth endpoints (skip token automatically)
 export const authAPI = {
-  login: async (credentials) => {
-    // Always clear old token before trying login
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
-    return axios.post(
+  login: (credentials) =>
+    axios.post(
       `${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/auth/login`,
       credentials,
       { headers: { 'Content-Type': 'application/json' } }
-    );
-  },
+    ),
 
-  register: (userData) => {
-    return axios.post(
+  register: (userData) =>
+    axios.post(
       `${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/auth/register`,
       userData,
       { headers: { 'Content-Type': 'application/json' } }
-    );
+    ),
+};
+
+// Email endpoints
+export const emailAPI = {
+  // Rewrite JSON text
+  rewriteEmail: ({ text, tone }) => api.post('/rewrite', { text, tone }),
+
+  // Upload file (multipart)
+  uploadFile: (file, tone) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('tone', tone);
+    return api.post('/rewrite/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
   },
 };
 
-// Protected endpoints → go through api (JWT auto-attached)
-export const emailAPI = {
-  rewriteEmail: (data) => api.post('/rewrite', data),
-};
-
+// User endpoints
 export const userAPI = {
   getProfile: () => api.get('/user/profile'),
 };
