@@ -17,6 +17,10 @@ COPY src ./src
 # Package the application
 RUN ./mvnw package -DskipTests
 
+# --- NEW LINE ---
+# List the contents of the target directory to debug
+RUN ls -l target/
+
 # Expose port 8080 to the outside world
 EXPOSE 8080
 
