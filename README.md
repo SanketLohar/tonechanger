@@ -21,8 +21,11 @@
 
 *A screenshot of the user interface.*
 
-**[<img width="1900" height="813" alt="r1" src="https://github.com/user-attachments/assets/18690268-6d7b-4276-8f42-d7dd8195fc7b" />
-]**
+**<img width="1900" height="813" alt="r1" src="https://github.com/user-attachments/assets/18690268-6d7b-4276-8f42-d7dd8195fc7b" />
+  <img width="1891" height="902" alt="r2" src="https://github.com/user-attachments/assets/c80ea5bf-677f-4431-8cc6-c2764a27da6e" />
+  <img width="1892" height="897" alt="r3" src="https://github.com/user-attachments/assets/2e139f6e-c7e6-47db-badf-7cea439906a0" />
+
+**
 
 ---
 
