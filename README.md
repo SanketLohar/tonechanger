@@ -1,4 +1,4 @@
-<img width="1900" height="813" alt="r1" src="https://github.com/user-attachments/assets/3714baf2-33b2-45e0-83c7-d9cb9c79e749" /><img width="1900" height="813" alt="r1" src="https://github.com/user-attachments/assets/58a1fc05-0264-4ecc-b049-0d3253a29281" /># ReTone ✨ - AI-Powered Email Tone Rewriter
+# ReTone ✨ - AI-Powered Email Tone Rewriter
 
 > A smart, full-stack web application that leverages the Gemini API to rewrite your emails and text into the perfect tone, ensuring your message always lands the right way.
 
