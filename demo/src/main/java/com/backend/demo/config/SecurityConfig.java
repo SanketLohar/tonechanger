@@ -41,12 +41,10 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // ✅ Allow origins including local and production URLs
+        // ✅ Use a wildcard pattern to allow all Vercel subdomains
         configuration.setAllowedOriginPatterns(List.of(
                 "http://localhost:5173",
-                "https://tonechanger-byro3enep-sanketlohars-projects.vercel.app",
-                "https://tonechanger-eta.vercel.app",
-                "https://tonechanger.onrender.com"
+                "https://*-sanketlohars-projects.vercel.app"
         ));
 
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
@@ -67,10 +65,12 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // Allow all pre-flight OPTIONS requests
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // Allow all requests to the authentication endpoints
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/rewrite/**").authenticated()
-                        .anyRequest().denyAll()
+                        // Require authentication for all other requests
+                        .anyRequest().authenticated()
                 );
 
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
