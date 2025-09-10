@@ -5,17 +5,17 @@ import com.backend.demo.dto.RegisterRequest;
 import com.backend.demo.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin; // ✅ 1. Import this
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin("*") // ✅ 2. Add this annotation to allow requests from your frontend
+@CrossOrigin(origins = {
+        "http://localhost:5173",
+        "https://tonechanger-byro3enep-sanketlohars-projects.vercel.app",
+        "https://tonechanger-eta.vercel.app"
+}) // ✅ Allow CORS for specific origins (optional fallback)
 public class AuthController {
 
     @Autowired

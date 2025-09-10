@@ -37,39 +37,53 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
-    // Global CORS config
+    // ✅ Global CORS Configuration
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173")); // your React app
+
+        // Allowed origins — include local and production frontend URLs
+        configuration.setAllowedOriginPatterns(List.of(
+                "http://localhost:5173",
+                "https://tonechanger-byro3enep-sanketlohars-projects.vercel.app",
+                "https://tonechanger-eta.vercel.app"
+        ));
+
+        // Allowed HTTP methods
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*")); // allow all headers
-        configuration.setExposedHeaders(Arrays.asList("Authorization")); // expose token
+
+        // Allow all headers
+        configuration.setAllowedHeaders(List.of("*"));
+
+        // Expose the Authorization header so frontend can access it
+        configuration.setExposedHeaders(List.of("Authorization"));
+
+        // Allow credentials like cookies, authorization headers, etc.
         configuration.setAllowCredentials(true);
 
+        // Register the CORS configuration for all endpoints
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+
         return source;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS
+                .csrf(csrf -> csrf.disable()) // Disable CSRF (for stateless APIs)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // No sessions
                 .authorizeHttpRequests(auth -> auth
-                        // allow preflight so CORS doesn't 403
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // open auth routes
-                        .requestMatchers("/api/auth/**").permitAll()
-                        // protect rewrite APIs with JWT
-                        .requestMatchers("/api/rewrite/**").authenticated()
-                        // everything else is denied
-                        .anyRequest().denyAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow preflight requests
+                        .requestMatchers("/api/auth/**").permitAll() // Allow auth endpoints
+                        .requestMatchers("/api/rewrite/**").authenticated() // Secure rewrite endpoints
+                        .anyRequest().denyAll() // Deny everything else
                 );
 
+        // Add JWT filter before username-password filter
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 }
