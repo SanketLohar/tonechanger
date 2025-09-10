@@ -14,10 +14,14 @@ public class WebConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/api/**") // Apply to all API endpoints
-                        .allowedOrigins("https://tonechanger-eta.vercel.app") // Your Vercel frontend URL
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Allowed HTTP methods
-                        .allowedHeaders("*") // Allow all headers
-                        .allowCredentials(true); // Allow credentials
+                        // Add both your previous URL and the new one
+                        .allowedOrigins(
+                                "https://tonechanger-eta.vercel.app",
+                                "https://tonechanger-git-main-sanketlohars-projects.vercel.app"
+                        )
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedHeaders("*")
+                        .allowCredentials(true);
             }
         };
     }
