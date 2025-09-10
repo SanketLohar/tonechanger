@@ -14,11 +14,8 @@ public class WebConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/api/**") // Apply to all API endpoints
-                        // Add both your previous URL and the new one
-                        .allowedOrigins(
-                                "https://tonechanger-eta.vercel.app",
-                                "https://tonechanger-git-main-sanketlohars-projects.vercel.app"
-                        )
+                        // This pattern allows all subdomains for your Vercel projects
+                        .allowedOriginPatterns("https://*-sanketlohars-projects.vercel.app", "https://tonechanger-eta.vercel.app")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
