@@ -25,4 +25,4 @@ RUN ./mvnw package -DskipTests
 EXPOSE 8080
 
 # The command to run your application
-ENTRYPOINT ["java", "-jar", "target/tonechanger-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-jar", "target/demo-0.0.1-SNAPSHOT.jar"]
