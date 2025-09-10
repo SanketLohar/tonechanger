@@ -11,11 +11,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = {
-        "http://localhost:5173",
-        "https://tonechanger-byro3enep-sanketlohars-projects.vercel.app",
-        "https://tonechanger-eta.vercel.app"
-}) // ✅ Allow CORS for specific origins (optional fallback)
 public class AuthController {
 
     @Autowired

@@ -37,31 +37,23 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
-    // ✅ Global CORS Configuration
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Allowed origins — include local and production frontend URLs
+        // ✅ Allow origins including local and production URLs
         configuration.setAllowedOriginPatterns(List.of(
                 "http://localhost:5173",
                 "https://tonechanger-byro3enep-sanketlohars-projects.vercel.app",
-                "https://tonechanger-eta.vercel.app"
+                "https://tonechanger-eta.vercel.app",
+                "https://tonechanger.onrender.com"
         ));
 
-        // Allowed HTTP methods
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-
-        // Allow all headers
         configuration.setAllowedHeaders(List.of("*"));
-
-        // Expose the Authorization header so frontend can access it
         configuration.setExposedHeaders(List.of("Authorization"));
-
-        // Allow credentials like cookies, authorization headers, etc.
         configuration.setAllowCredentials(true);
 
-        // Register the CORS configuration for all endpoints
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
 
@@ -71,17 +63,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS
-                .csrf(csrf -> csrf.disable()) // Disable CSRF (for stateless APIs)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // No sessions
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow preflight requests
-                        .requestMatchers("/api/auth/**").permitAll() // Allow auth endpoints
-                        .requestMatchers("/api/rewrite/**").authenticated() // Secure rewrite endpoints
-                        .anyRequest().denyAll() // Deny everything else
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/rewrite/**").authenticated()
+                        .anyRequest().denyAll()
                 );
 
-        // Add JWT filter before username-password filter
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
