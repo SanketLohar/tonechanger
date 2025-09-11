@@ -11,9 +11,9 @@
 
 ## 🚀 Live Demo
 
-*A live demo of the application will be available here soon.*
 
-**[LINK TO YOUR DEPLOYED APPLICA]**
+
+**https://tonechanger-git-main-sanketlohars-projects.vercel.app/**
 
 ---
 
