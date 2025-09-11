@@ -11,6 +11,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -32,27 +37,41 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
+    // This bean defines the CORS rules
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOriginPatterns(List.of(
+                "http://localhost:5173",
+                "https://*-sanketlohars-projects.vercel.app"
+        ));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+    // This bean applies the rules
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                // Enable CORS using the bean above
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 // Disable CSRF
                 .csrf(csrf -> csrf.disable())
-
-                // Apply CORS settings. Spring will automatically look for a corsConfigurationSource bean.
-                .cors(cors -> {})
-
+                // Set session management to stateless
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // Define authorization rules
                 .authorizeHttpRequests(auth -> auth
-                        // Allow anyone to access the login and register endpoints
+                        // Allow anyone to access the auth endpoints
                         .requestMatchers("/api/auth/**").permitAll()
                         // Require authentication for all other requests
                         .anyRequest().authenticated()
-                )
+                );
 
-                // Configure session management to be stateless
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-
-        // Add the JWT filter before the standard authentication filter
+        // Add the JWT filter
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
