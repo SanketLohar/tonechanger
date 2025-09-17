@@ -1,4 +1,4 @@
-# ReTone ✨ - AI-Powered Email Tone Rewriter
+# ReTone  - AI-Powered Email Tone Rewriter
 
 > A smart, full-stack web application that leverages the Gemini API to rewrite your emails and text into the perfect tone, ensuring your message always lands the right way.
 
@@ -9,7 +9,7 @@
 
 ---
 
-## 🚀 Live Demo
+## Live Demo
 
 
 
@@ -17,7 +17,7 @@
 
 ---
 
-## 📸 Screenshot
+## Screenshot
 
 *A screenshot of the user interface.*
 
@@ -29,13 +29,13 @@
 
 ---
 
-## 🎯 The Problem
+## The Problem
 
 In professional and personal communication, the tone of an email can drastically alter its impact. Striking the right balance between being formal, casual, polite, or professional can be challenging. A poorly toned email can lead to miscommunication and unintended consequences. ReTone solves this by providing a simple yet powerful tool to instantly adapt your text to the desired tone.
 
 ---
 
-## ✨ Features
+##  Features
 
 * **📝 Real-time Text Rewriting:** Paste your text directly into the chat interface for instant rewriting.
 * **📎 File Upload:** Upload `.txt`, `.md`, `.doc`, and `.docx` files to have their entire content rewritten.
@@ -45,7 +45,7 @@ In professional and personal communication, the tone of an email can drastically
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 ### Frontend
 * **Framework:** React.js
@@ -62,7 +62,7 @@ In professional and personal communication, the tone of an email can drastically
 
 ---
 
-## ⚙️ Getting Started
+## Getting Started
 
 To get a local copy up and running, follow these simple steps.
 
@@ -118,6 +118,6 @@ To get a local copy up and running, follow these simple steps.
 
 ---
 
-## 📄 License
+##  License
 
 This project is distributed under the MIT License. See `LICENSE` for more information.
