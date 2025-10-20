@@ -5,7 +5,7 @@ import axios from 'axios';
 // Axios instance
 // ----------------------
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api',
+  baseURL: import.meta.env.VITE_API_URL || 'https://tonechanger.onrender.com/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -56,14 +56,14 @@ api.interceptors.response.use(
 export const authAPI = {
   login: (credentials) =>
     axios.post(
-      `${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/auth/login`,
+      `${import.meta.env.VITE_API_URL || 'https://tonechanger.onrender.com/api'}/auth/login`,
       credentials,
       { headers: { 'Content-Type': 'application/json' } }
     ),
 
   register: (userData) =>
     axios.post(
-      `${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/auth/register`,
+      `${import.meta.env.VITE_API_URL || 'https://tonechanger.onrender.com/api'}/auth/register`,
       userData,
       { headers: { 'Content-Type': 'application/json' } }
     ),
