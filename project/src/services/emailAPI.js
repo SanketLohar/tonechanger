@@ -1,7 +1,7 @@
 // src/api/emailAPI.js
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:8080/api"; // ✅ remove /rewrite
+const API_BASE_URL = "https://tonechanger.onrender.com/api"; // ✅ remove /rewrite
 
 const emailAPI = {
   // Rewrite Email (JSON body)
